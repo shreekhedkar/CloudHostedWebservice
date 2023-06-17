@@ -29,9 +29,13 @@ pipeline {
         }    
         stage('publish artifacts')  {
             steps {
-                   sh "mvn compile com.google.cloud.tools:jib-maven-plugin:2.5.0:build -Dimage=registry.hub.docker.com/shreekhedkar/learn"
-                }
+                    script {
+                        sh "mvn compile com.google.cloud.tools:jib-maven-plugin:2.5.0:build -Dimage=registry.hub.docker.com/shreekhedkar/learn -Djib.from.auth.username=shreekhedkar@gmail.com \
+    -Djib.from.auth.password=Zebra@123 \"
+                
+                    }
             }
+        }
         stage('Deploy') {
             steps {
                 echo "about to deploy ${RELEASE}.Hold your breath."
