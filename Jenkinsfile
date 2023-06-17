@@ -8,39 +8,37 @@ pipeline {
         // Install the Maven version configured as "M3" and add it to the path.
         maven "MyMaven"
     }
-
+    environment {
+        RELEASE='2023.06'
+    }
     stages {
         stage('Checkout') {
             steps {
                 // Get some code from a GitHub repository
-                git 'https://github.com/shreekhedkar/RestAssured.git'
+                git 'https://github.com/shreekhedkar/CloudHostedWebservice.git'
+                echo "checkout completed for build ${env.BUILD_ID} on ${env.JENKINS_URL}"
                 }
         }    
         stage('Compile') {
             steps {
-                sh "mvn clean install -DskipTests=true"
+                sh "mvn clean package"
             }
         }    
         stage('Unit tests') {
             steps {
-              sh "mvn clean test -Dsurefire.suiteXmlFiles=${WORKSPACE}/src/test/resources/testng.xml"
+              sh "mvn clean install"
                 
             }
         }    
-        stage('Sonar')  {
-            when { expression { params.skip_sonar != true } }
+        stage('publish artifacts')  {
             steps {
-                    script {
-                    def scannerHome = tool 'JenkinsSonarQube';
-                    withSonarQubeEnv('MySonarQube') { 
-                        sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=github-jenkins-sonar-Declarative-Pipeline"
-                    }
+                   sh "mvn compile com.google.cloud.tools:jib-maven-plugin:2.5.0:build -Dimage=registry.hub.docker.com/shreekhedkar/learn"
                 }
             }
         }
-        stage('Report Generation') {
+        stage('Deploy') {
             steps {
-                testNG()
+                echo "about to deploy ${RELEASE}.Hold your breath."
             }
          }
         }
